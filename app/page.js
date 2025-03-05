@@ -30,7 +30,7 @@ export default function JobApplicationForm() {
     formDataToSend.append("phone", formData.phone);
     formDataToSend.append("cv", formData.cv);
 
-    const baseURL = "";
+    const baseURL = "https://nbob1b0d65.execute-api.us-west-1.amazonaws.com";
     try {
       const response = await fetch(`${baseURL}/api/submit`, {
         method: "POST",
