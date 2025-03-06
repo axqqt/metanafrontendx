@@ -1,7 +1,7 @@
 "use client"
 import React, { useState } from 'react';
 
-export default function JobApplicationForm() {
+function App() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -10,29 +10,49 @@ export default function JobApplicationForm() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
-  const [cvLink, setCvLink] = useState(null); // To store the CV link
+  const [cvLink, setCvLink] = useState(null);
 
+  // Handle text input changes
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: files ? files[0] : value,
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
     }));
   };
 
+  // Handle file input changes
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setFormData((prevData) => ({
+      ...prevData,
+      cv: file,
+    }));
+  };
+
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setToast(null);
     setCvLink(null); // Reset CV link on new submission
 
+    // Create FormData object
     const formDataToSend = new FormData();
     formDataToSend.append("name", formData.name);
     formDataToSend.append("email", formData.email);
     formDataToSend.append("phone", formData.phone);
     formDataToSend.append("cv", formData.cv);
 
-    const baseURL = "http://127.0.0.1:5000";
+    // Log form data for debugging
+    console.log("Form Data:", {
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      cv: formData.cv,
+    });
+
+    const baseURL = "http://127.0.0.1:5000"; //replace
     try {
       const response = await fetch(`${baseURL}/api/submit`, {
         method: "POST",
@@ -72,234 +92,167 @@ export default function JobApplicationForm() {
     }
   };
 
-  const handleDownload = () => {
-    if (cvLink) {
-      const link = document.createElement('a');
-      link.href = cvLink;
-      link.download = cvLink.split('/').pop(); // Extract the file name from the URL
-      link.click();
-    }
-  };
-
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      background: 'linear-gradient(to bottom, #f0f0f0, #e0e0e0)',
-      padding: '20px'
-    }}>
-      <div style={{
-        width: '100%',
-        maxWidth: '500px',
-        background: 'white',
-        borderRadius: '8px',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-        padding: '30px'
-      }}>
-        <div style={{
-          textAlign: 'center',
-          marginBottom: '20px'
-        }}>
-          <div style={{
-            width: '60px',
-            height: '60px',
-            borderRadius: '50%',
-            background: 'rgba(0,123,255,0.1)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            margin: '0 auto 15px'
-          }}>
-            📋
-          </div>
-          <h2 style={{
-            fontSize: '24px',
-            fontWeight: 'bold',
-            marginBottom: '10px'
-          }}>Job Application</h2>
-          <p style={{
-            color: '#6c757d',
-            fontSize: '14px'
-          }}>
-            Fill out the form below to submit your application
-          </p>
-        </div>
-
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 py-10 px-4 flex flex-col items-center justify-center">
+      <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 transition-all duration-300 hover:shadow-xl">
+        <h1 className="text-3xl font-bold text-center text-gray-800 mb-8">Join Our Team</h1>
+        
+        {/* Toast Message */}
         {toast && (
-          <div style={{
-            padding: '10px',
-            borderRadius: '4px',
-            marginBottom: '15px',
-            color: toast.type === 'success' ? '#155724' : '#721c24',
-            backgroundColor: toast.type === 'success' ? '#d4edda' : '#f8d7da'
-          }}>
-            {toast.message}
+          <div className={`mb-6 p-4 rounded-lg ${
+            toast.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          } flex items-center justify-between`}>
+            <p className="font-medium">{toast.message}</p>
+            <button 
+              onClick={() => setToast(null)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <span className="text-xl">&times;</span>
+            </button>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          <div>
-            <label 
-              htmlFor="name" 
-              style={{ 
-                display: 'block', 
-                marginBottom: '5px', 
-                fontWeight: '600' 
-              }}
-            >
-              Full Name
-            </label>
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Name Field */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">Full Name</label>
             <input
               type="text"
-              id="name"
               name="name"
               value={formData.name}
               onChange={handleChange}
               required
-              style={{
-                width: '100%',
-                padding: '10px',
-                border: '1px solid #ced4da',
-                borderRadius: '4px',
-                fontSize: '16px'
-              }}
-              placeholder="John Doe"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors outline-none"
+              placeholder="Enter your full name"
             />
           </div>
 
-          <div>
-            <label 
-              htmlFor="email" 
-              style={{ 
-                display: 'block', 
-                marginBottom: '5px', 
-                fontWeight: '600' 
-              }}
-            >
-              Email Address
-            </label>
+          {/* Email Field */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">Email Address</label>
             <input
               type="email"
-              id="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
               required
-              style={{
-                width: '100%',
-                padding: '10px',
-                border: '1px solid #ced4da',
-                borderRadius: '4px',
-                fontSize: '16px'
-              }}
-              placeholder="john@example.com"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors outline-none"
+              placeholder="your.email@example.com"
             />
           </div>
 
-          <div>
-            <label 
-              htmlFor="phone" 
-              style={{ 
-                display: 'block', 
-                marginBottom: '5px', 
-                fontWeight: '600' 
-              }}
-            >
-              Phone Number
-            </label>
+          {/* Phone Field */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">Phone Number</label>
             <input
               type="tel"
-              id="phone"
               name="phone"
               value={formData.phone}
               onChange={handleChange}
               required
-              style={{
-                width: '100%',
-                padding: '10px',
-                border: '1px solid #ced4da',
-                borderRadius: '4px',
-                fontSize: '16px'
-              }}
-              placeholder="+1 (555) 000-0000"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors outline-none"
+              placeholder="+1 (XXX) XXX-XXXX"
             />
           </div>
 
-          <div>
-            <label 
-              htmlFor="cv" 
-              style={{ 
-                display: 'block', 
-                marginBottom: '5px', 
-                fontWeight: '600' 
-              }}
-            >
-              Upload CV (PDF/DOCX)
-            </label>
-            <input
-              type="file"
-              id="cv"
-              name="cv"
-              accept=".pdf,.docx"
-              onChange={handleChange}
-              required
-              style={{
-                width: '100%',
-                padding: '10px',
-                border: '1px solid #ced4da',
-                borderRadius: '4px',
-                fontSize: '16px'
-              }}
-            />
-            <p style={{
-              marginTop: '5px',
-              fontSize: '12px',
-              color: '#6c757d'
-            }}>
-              Maximum file size: 5MB. Accepted formats: PDF, DOCX
-            </p>
+          {/* CV Upload Field */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">Upload CV</label>
+            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-blue-400 transition-colors">
+              <div className="space-y-1 text-center">
+                <svg 
+                  className="mx-auto h-12 w-12 text-gray-400" 
+                  stroke="currentColor" 
+                  fill="none" 
+                  viewBox="0 0 48 48" 
+                  aria-hidden="true"
+                >
+                  <path 
+                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4h-12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                  />
+                </svg>
+                <div className="flex text-sm text-gray-600">
+                  <label 
+                    htmlFor="cv" 
+                    className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500"
+                  >
+                    <span>Upload a file</span>
+                    <input 
+                      id="cv" 
+                      name="cv" 
+                      type="file" 
+                      accept=".pdf,.docx" 
+                      onChange={handleFileChange} 
+                      required 
+                      className="sr-only" 
+                    />
+                  </label>
+                  <p className="pl-1">or drag and drop</p>
+                </div>
+                <p className="text-xs text-gray-500">PDF or DOCX up to 10MB</p>
+                {formData.cv && (
+                  <p className="text-sm text-green-600">
+                    File selected: {formData.cv.name}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
 
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={isSubmitting}
-            style={{
-              width: '100%',
-              padding: '12px',
-              backgroundColor: isSubmitting ? '#6c757d' : '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              fontSize: '16px',
-              cursor: isSubmitting ? 'not-allowed' : 'pointer',
-              transition: 'background-color 0.2s'
-            }}
+            className={`w-full px-6 py-3 rounded-lg text-white font-medium transition-colors ${
+              isSubmitting 
+                ? 'bg-blue-300 cursor-not-allowed' 
+                : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+            }`}
           >
-            {isSubmitting ? "Submitting..." : "Submit Application"}
+            {isSubmitting ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Submitting...
+              </span>
+            ) : (
+              "Submit Application"
+            )}
           </button>
         </form>
 
+        {/* CV Link Display */}
         {cvLink && (
-          <div style={{ marginTop: '15px', textAlign: 'center' }}>
-            <button
-              onClick={handleDownload}
-              style={{
-                padding: '12px',
-                backgroundColor: '#28a745',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                fontSize: '16px',
-                cursor: 'pointer',
-              }}
+          <div className="mt-6 p-4 border border-green-200 rounded-lg bg-green-50">
+            <p className="text-green-800 mb-2">
+              Your CV has been uploaded successfully.
+            </p>
+            <a
+              href={cvLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
             >
-              Download CV
-            </button>
+              View Uploaded CV
+            </a>
           </div>
         )}
       </div>
+      
+      <p className="mt-8 text-center text-sm text-gray-500">
+        By submitting this application, you agree to our 
+        <a href="#" className="font-medium text-blue-600 hover:text-blue-500"> Terms of Service </a> 
+        and 
+        <a href="#" className="font-medium text-blue-600 hover:text-blue-500"> Privacy Policy</a>.
+      </p>
     </div>
   );
 }
+
+export default App;
