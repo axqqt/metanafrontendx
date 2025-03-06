@@ -10,6 +10,7 @@ export default function JobApplicationForm() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
+  const [cvLink, setCvLink] = useState(null); // To store the CV link
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -23,6 +24,7 @@ export default function JobApplicationForm() {
     e.preventDefault();
     setIsSubmitting(true);
     setToast(null);
+    setCvLink(null); // Reset CV link on new submission
 
     const formDataToSend = new FormData();
     formDataToSend.append("name", formData.name);
@@ -30,7 +32,7 @@ export default function JobApplicationForm() {
     formDataToSend.append("phone", formData.phone);
     formDataToSend.append("cv", formData.cv);
 
-    const baseURL = "https://nbob1b0d65.execute-api.us-west-1.amazonaws.com";
+    const baseURL = "http://127.0.0.1:5000";
     try {
       const response = await fetch(`${baseURL}/api/submit`, {
         method: "POST",
@@ -38,10 +40,12 @@ export default function JobApplicationForm() {
       });
 
       if (response.ok) {
+        const data = await response.json();
         setToast({
           type: 'success',
           message: 'Your application has been submitted successfully!'
         });
+        setCvLink(data.cv_link); // Store the CV link
         // Reset form
         setFormData({
           name: "",
@@ -65,6 +69,15 @@ export default function JobApplicationForm() {
       });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDownload = () => {
+    if (cvLink) {
+      const link = document.createElement('a');
+      link.href = cvLink;
+      link.download = cvLink.split('/').pop(); // Extract the file name from the URL
+      link.click();
     }
   };
 
@@ -267,6 +280,25 @@ export default function JobApplicationForm() {
             {isSubmitting ? "Submitting..." : "Submit Application"}
           </button>
         </form>
+
+        {cvLink && (
+          <div style={{ marginTop: '15px', textAlign: 'center' }}>
+            <button
+              onClick={handleDownload}
+              style={{
+                padding: '12px',
+                backgroundColor: '#28a745',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                fontSize: '16px',
+                cursor: 'pointer',
+              }}
+            >
+              Download CV
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
