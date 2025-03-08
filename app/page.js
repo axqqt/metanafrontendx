@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 
 function App() {
+
+  //replace baseURL
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -52,7 +54,7 @@ function App() {
       cv: formData.cv,
     });
 
-    const baseURL = "http://127.0.0.1:5000"; //replace
+    const baseURL = "https://metanaback-production.up.railway.app"; //replace
     try {
       const response = await fetch(`${baseURL}/api/submit`, {
         method: "POST",
