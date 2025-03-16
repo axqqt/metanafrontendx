@@ -2,11 +2,8 @@
 import React, { useState } from 'react';
 
 function App() {
-  // URLs configuration
-  const urls = {
-    primary: "https://metanaback-production.up.railway.app",
-    fallback: "https://metanaback.onrender.com"
-  };
+  // Single URL configuration as requested
+  const apiUrl = "https://metanaback-production.up.railway.app";
 
   const [formData, setFormData] = useState({
     name: "",
@@ -17,7 +14,6 @@ function App() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
   const [cvLink, setCvLink] = useState(null);
-  const [currentUrlIndex, setCurrentUrlIndex] = useState('primary'); // Track which URL we're using
 
   // Handle text input changes
   const handleChange = (e) => {
@@ -58,22 +54,16 @@ function App() {
       phone: formData.phone,
       cv: formData.cv,
     });
-
-    let successful = false;
     
-    // Try primary URL first
     try {
-      // Try with primary URL first
-      const baseURL = urls[currentUrlIndex];
-      console.log(`Attempting submission with ${currentUrlIndex} URL: ${baseURL}`);
+      console.log(`Submitting to: ${apiUrl}/api/submit`);
       
-      const response = await fetch(`${baseURL}/api/submit`, {
+      const response = await fetch(`${apiUrl}/api/submit`, {
         method: "POST",
         body: formDataToSend,
       });
 
       if (response.ok) {
-        successful = true;
         const data = await response.json();
         setToast({
           type: 'success',
@@ -90,60 +80,18 @@ function App() {
         // Reset file input
         const fileInput = document.getElementById("cv");
         if (fileInput) fileInput.value = "";
-      } 
-    } catch (error) {
-      console.error("Error with primary submission:", error);
-    }
-    
-    // If primary URL failed, try fallback URL
-    if (!successful && currentUrlIndex === 'primary') {
-      try {
-        setCurrentUrlIndex('fallback');
-        const fallbackURL = urls.fallback;
-        console.log(`Attempting submission with fallback URL: ${fallbackURL}`);
-        
-        const response = await fetch(`${fallbackURL}/api/submit`, {
-          method: "POST",
-          body: formDataToSend,
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setToast({
-            type: 'success',
-            message: 'Your application has been submitted successfully using our backup server!'
-          });
-          setCvLink(data.cv_link);
-          // Reset form
-          setFormData({
-            name: "",
-            email: "",
-            phone: "",
-            cv: null,
-          });
-          // Reset file input
-          const fileInput = document.getElementById("cv");
-          if (fileInput) fileInput.value = "";
-        } else {
-          setToast({
-            type: 'error',
-            message: 'There was an error submitting your application. Please try again later.'
-          });
-        }
-      } catch (error) {
+      } else {
         setToast({
           type: 'error',
-          message: 'An unexpected error occurred. Please try again later.'
+          message: 'There was an error submitting your application. Please try again later.'
         });
       }
-    } else if (!successful) {
-      // Both URLs failed
+    } catch (error) {
+      console.error("Error with submission:", error);
       setToast({
         type: 'error',
-        message: 'Unable to reach our servers. Please try again later.'
+        message: 'An unexpected error occurred. Please try again later.'
       });
-      // Reset to primary for next attempt
-      setCurrentUrlIndex('primary');
     }
     
     setIsSubmitting(false);
